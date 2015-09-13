@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # mhite@hotmail.com
-# 7/6/2015
-
-# this terrible script is my own weapon of mass destruction, sorry in advance
+# 9/12/2015
 
 import argparse
 import collections
@@ -317,14 +315,8 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
 def main(arg_list=None):
     parser = get_parser()
     args = parser.parse_args(args=arg_list)
-    # configure appropriate logging
     configure_logging(level=args.loglevel, filename=args.logfile)
     logging.debug("args = %s" % args)
-
-    # check to make sure we can write new XML
-    # check that DEFAULT_ITUNES_MUSIC_FOLDER exists
-    # Need logic to determine 'Kind' key
-
     generate_xml(swinsian_db=args.db, itunes_xml=args.xml,
                  itunes_music_folder=args.itunes_music_folder)
     logging.info("Done.")
@@ -332,4 +324,3 @@ def main(arg_list=None):
 
 if __name__ == "__main__":
     main()
-
