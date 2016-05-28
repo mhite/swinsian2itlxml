@@ -14,7 +14,7 @@ import time
 import urllib
 
 
-__VERSION__ = '1.0'
+__VERSION__ = '1.0.1'
 DEFAULT_SQLITE = os.path.expanduser('~/Library/Application Support/Swinsian/Library.sqlite')
 DEFAULT_XML = os.path.expanduser('~/Music/iTunes/iTunes Library.xml')
 DEFAULT_ITUNES_MUSIC_FOLDER = os.path.expanduser('~/Music/iTunes/iTunes Music/')
@@ -228,6 +228,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
         logging.info("Generating folder playlist information...")
         cur.execute("SELECT * FROM playlist WHERE folder IS NOT NULL")
         rows = cur.fetchall()
+        x = 2
         for x, row in enumerate(rows, 2):
             name = row['name']
             playlist_id = x
