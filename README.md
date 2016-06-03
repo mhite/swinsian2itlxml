@@ -70,6 +70,7 @@ $ git clone https://github.com/mhite/swinsian2itlxml
 Information about the tool's usage can be viewed with the ```-h``` option.
 
 ```
+$ cd swinsian2itlxml
 $ ./swinsian2itlxml.py -h
 usage: swinsian2itlxml.py [-h] [--version]
                           [--log-level {critical,error,warning,info,debug}]
@@ -170,6 +171,10 @@ $ ./swinsian2itlxml.py -d ~/Dropbox/Library.sqlite -x test.xml
 Your code contributions are welcome. Please fork and open a pull request.
 
 ## Change Log
+
+### 1.0.1
+
+- Fix for case when folder playlist information SQL query returns empty
 
 ### 1.0
 
