@@ -12,6 +12,7 @@ import plistlib
 import sqlite3
 import time
 import urllib
+import re
 
 
 __VERSION__ = '1.0.1'
@@ -113,6 +114,18 @@ def get_parser():
     return parser
 
 
+_controlCharPat = re.compile(
+    r"[\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0e\x0f"
+    r"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f]")
+
+
+def strip_plist_control_chars(src):
+    if src is None:
+        return None
+
+    return re.sub(_controlCharPat, '', src)
+
+
 def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
     # plist header meta data -- mostly hard-coded for now
     plist_dict = collections.OrderedDict([('Major Version', 1),
@@ -135,14 +148,20 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
         rows = cur.fetchall()
         iTunesTrackDict = collections.OrderedDict()
         for row in rows:
+            # for key, val in dict(row).items():
+            #     if isinstance(val, basestring):
+            #         m = _controlCharPat.search(val)
+            #         if m is not None:
+            #             print ValueError("strings can't contains control characters; " + repr(val) + " on " + key + " in " + repr(row['title']))
+
             track_id = row['track_id']
             # convert strings to UTF-8
-            name = row["title"]
-            artist = row["artist"]
-            album_artist = row["albumartist"]
-            album = row["album"]
-            grouping = row["grouping"]
-            genre = row["genre"]
+            name = strip_plist_control_chars(row["title"])
+            artist = strip_plist_control_chars(row["artist"])
+            album_artist = strip_plist_control_chars(row["albumartist"])
+            album = strip_plist_control_chars(row["album"])
+            grouping = strip_plist_control_chars(row["grouping"])
+            genre = strip_plist_control_chars(row["genre"])
             kind = ""
             size = row["filesize"]
             # total_time = int(round(row["length"] * 1000, 10))
@@ -154,7 +173,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
             date_added = datetime.datetime.fromtimestamp(row["dateadded"] + NSTimeIntervalSince1970)  # convert to date
             bit_rate = row["bitrate"]
             sample_rate = row["samplerate"]
-            comments = row["comment"]
+            comments = strip_plist_control_chars(row["comment"])
             play_count = row["playcount"]
             compilation = bool(row["compilation"])
             persistent_id = "%0.16x".upper() % row["track_id"]
