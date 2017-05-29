@@ -46,10 +46,10 @@ delete it and relaunch iTunes. Do not delete the .itl file.
 
 This tool was developed and test with the following:
 
-- Mac OS X Yosemite 10.10.5
+- macOS Sierra 10.12.4
 - Python 2.7.10
-- Swinsian 1.10.15 (230)
-- Serato DJ 1.7.8 (1785433)
+- Swinsian 1.13.1 (332)
+- Serato DJ 1.9.6 (1964129)
 
 ## Limitations
 
@@ -171,6 +171,10 @@ $ ./swinsian2itlxml.py -d ~/Dropbox/Library.sqlite -x test.xml
 Your code contributions are welcome. Please fork and open a pull request.
 
 ## Change Log
+
+### 1.0.2
+
+- Fix for `ValueError: strings can't contains control characters; use plistlib.Data instead` crash when XML-unsafe UTF-8 characters were encountered. Thanks to Seth Millstein for sending me a sample Swinsian database exhibiting this issue. Also thanks to [Lendar](https://github.com/Lendar) for submitting a [pull request](https://github.com/mhite/swinsian2itlxml/pull/4) which was the basis for this fix.
 
 ### 1.0.1
 
