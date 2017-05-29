@@ -9,12 +9,13 @@ import logging
 import math
 import os
 import plistlib
+import re
 import sqlite3
 import time
 import urllib
 
 
-__VERSION__ = '1.0.1'
+__VERSION__ = '1.0.2'
 DEFAULT_SQLITE = os.path.expanduser('~/Library/Application Support/Swinsian/Library.sqlite')
 DEFAULT_XML = os.path.expanduser('~/Music/iTunes/iTunes Library.xml')
 DEFAULT_ITUNES_MUSIC_FOLDER = os.path.expanduser('~/Music/iTunes/iTunes Music/')
@@ -113,6 +114,30 @@ def get_parser():
     return parser
 
 
+def escape_xml_illegal_chars(val, replacement='?'):
+    """Replace illegal XML characters with a user defined value.
+
+    Not all UTF-8 characters are valid XML. This function will strip illegal
+    UTF-8 characters to prepare them for XML documents. It will also
+    silently ignore 'None' values.
+
+    https://lsimons.wordpress.com/2011/03/17/stripping-illegal-characters-out-of-xml-in-python/
+    https://github.com/enthought/Python-2.7.3/blob/master/Lib/plistlib.py#L215
+
+    Args:
+        val: Value to filter.
+        replacement: Replace invalid character with this value.
+    Returns:
+        Sanitized value.
+"""
+    _illegal_xml_chars_RE = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+
+    if val is not None:
+        return _illegal_xml_chars_RE.sub(replacement, val)
+    else:
+        return None
+
+
 def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
     # plist header meta data -- mostly hard-coded for now
     plist_dict = collections.OrderedDict([('Major Version', 1),
@@ -136,13 +161,13 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
         iTunesTrackDict = collections.OrderedDict()
         for row in rows:
             track_id = row['track_id']
-            # convert strings to UTF-8
-            name = row["title"]
-            artist = row["artist"]
-            album_artist = row["albumartist"]
-            album = row["album"]
-            grouping = row["grouping"]
-            genre = row["genre"]
+            # convert strings to XML-safe UTF-8
+            name = escape_xml_illegal_chars(row["title"])
+            artist = escape_xml_illegal_chars(row["artist"])
+            album_artist = escape_xml_illegal_chars(row["albumartist"])
+            album = escape_xml_illegal_chars(row["album"])
+            grouping = escape_xml_illegal_chars(row["grouping"])
+            genre = escape_xml_illegal_chars(row["genre"])
             kind = ""
             size = row["filesize"]
             # total_time = int(round(row["length"] * 1000, 10))
@@ -154,7 +179,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
             date_added = datetime.datetime.fromtimestamp(row["dateadded"] + NSTimeIntervalSince1970)  # convert to date
             bit_rate = row["bitrate"]
             sample_rate = row["samplerate"]
-            comments = row["comment"]
+            comments = escape_xml_illegal_chars(row["comment"])
             play_count = row["playcount"]
             compilation = bool(row["compilation"])
             persistent_id = "%0.16x".upper() % row["track_id"]
