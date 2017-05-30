@@ -15,9 +15,9 @@ import time
 import urllib
 
 
-__VERSION__ = '1.0.2'
+__VERSION__ = '1.0.3'
 DEFAULT_SQLITE = os.path.expanduser('~/Library/Application Support/Swinsian/Library.sqlite')
-DEFAULT_XML = os.path.expanduser('~/Music/iTunes/iTunes Library.xml')
+DEFAULT_XML = os.path.expanduser('~/Music/iTunes/iTunes Music Library.xml')
 DEFAULT_ITUNES_MUSIC_FOLDER = os.path.expanduser('~/Music/iTunes/iTunes Music/')
 NSTimeIntervalSince1970 = 978307200.0
 
@@ -138,6 +138,21 @@ def escape_xml_illegal_chars(val, replacement='?'):
         return None
 
 
+def classify_file_kind(filename):
+    lookup_table = {'mp3': 'MPEG audio file',
+                    'aiff': 'AIFF audio file',
+                    'aif': 'AIFF audio file',
+                    'wav': 'WAV audio file',
+                    'm4a': 'AAC audio file',
+                    'm4p': 'Protected AAC audio file',
+
+    try:
+        extension = filename.strip().lower().split(".")[-1]
+    except:
+        return None
+    return lookup_table[extension]
+
+
 def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
     # plist header meta data -- mostly hard-coded for now
     plist_dict = collections.OrderedDict([('Major Version', 1),
@@ -156,7 +171,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
         cur = con.cursor()
         # tracks
         logging.info("Generating track information...")
-        cur.execute("SELECT title, artist, albumartist, album, grouping, genre, filesize, length, tracknumber, year, bpm, dateadded, bitrate, samplerate, comment, playcount, lastplayed, compilation, track_id, path FROM track")
+        cur.execute("SELECT title, artist, albumartist, album, grouping, genre, filesize, length, tracknumber, year, bpm, dateadded, bitrate, samplerate, comment, playcount, lastplayed, compilation, track_id, path, filename FROM track")
         rows = cur.fetchall()
         iTunesTrackDict = collections.OrderedDict()
         for row in rows:
@@ -168,7 +183,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
             album = escape_xml_illegal_chars(row["album"])
             grouping = escape_xml_illegal_chars(row["grouping"])
             genre = escape_xml_illegal_chars(row["genre"])
-            kind = ""
+            kind = classify_file_kind(row["filename"])
             size = row["filesize"]
             # total_time = int(round(row["length"] * 1000, 10))
             total_time = int(math.ceil(row["length"] * 1000))
@@ -207,7 +222,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
                           'Compilation': compilation,
                           'Persistent ID': persistent_id,
                           'Location': location,
-                          'Kind': 'MPEG audio file',
+                          'Kind': kind,
                           'Date Added': date_added}
 
             if row["lastplayed"]:
@@ -268,7 +283,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
             cur.execute('SELECT * FROM playlistfolderplaylist WHERE playlist_id = %s' % row["playlist_id"])
             playlist_parent = cur.fetchall()
             if len(playlist_parent) > 1:
-                print "something weird happened, folder can't have more than 1 parent"
+                logging.critical("Folder can't have more than one parent ... aborting!")
                 sys.exit()
             elif len(playlist_parent) == 1 and playlist_parent[0]['playlistfolder_id']:
                 parent_persistent_id = "%0.16x".upper() % playlist_parent[0]['playlistfolder_id']

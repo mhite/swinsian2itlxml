@@ -64,7 +64,7 @@ The table also shows the file extension mappings the conversion tool uses to pop
 |Apple Lossless audio file|m4a|
 |Apple Music AAC audio file|
 |Internet audio file|
-|MPEG audio file|
+|MPEG audio file|mp3|
 |MPEG-4 audio file|
 |Matched AAC audio file|
 |Protected AAC audio file|
@@ -74,6 +74,23 @@ The table also shows the file extension mappings the conversion tool uses to pop
 |Sound Designer II audio file|
 |WAV audio file|
 
+Serato depends on an accurate "Kind" specification in the XML or else the file will fail to play.
 
+#### Supported types
 
+Swinsian
+
+MP3, AAC, ALAC, WAV, FLAC, Ogg Vorbis, AIFF, Opus, AC3, APE WavPack, MusePack, and WMA
+
+Serato
+
+.MP3
+.OGG
+.AAC
+.ALAC/.FLAC
+.AIF
+.WAV
+.WL.MP3
+
+iTunes
 
