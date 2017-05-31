@@ -172,6 +172,11 @@ Your code contributions are welcome. Please fork and open a pull request.
 
 ## Change Log
 
+### 1.0.3
+
+- Fix for file classification. This should allow more supported file types to play in Serato DJ.
+- Default path to XML updated to reflect iTunes' most current default file path. The old file path was `~/Music/iTunes/iTunes Library.xml`. The new path is `~/Music/iTunes/iTunes Music Library.xml`. If the old behavior was working for you, you may need to explicitly pass the file path via the `--xml` option now.
+
 ### 1.0.2
 
 - Fix for `ValueError: strings can't contains control characters; use plistlib.Data instead` crash when XML-unsafe UTF-8 characters were encountered. Thanks to Seth Millstein for sending me a sample Swinsian database exhibiting this issue. Also thanks to [Lendar](https://github.com/Lendar) for submitting a [pull request](https://github.com/mhite/swinsian2itlxml/pull/4) which was the basis for this fix.

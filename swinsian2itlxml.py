@@ -138,19 +138,89 @@ def escape_xml_illegal_chars(val, replacement='?'):
         return None
 
 
+def find_string(fname, s, start=0, bsize=4096):
+    """Search file for first occurence of specified string.
+
+    Args:
+        fname: Filename to search.
+        s: Search string.
+    Returns:
+        If string found, returns integer position in file.
+        If string not found, returns -1.
+    """
+    with open(fname, 'rb') as f:
+        fsize = os.path.getsize(fname)
+        buffer = None
+        if start > 0:
+            f.seek(start)
+        overlap = len(s) - 1
+        while True:
+            if (f.tell() >= overlap and f.tell() < fsize):
+                f.seek(f.tell() - overlap)
+            buffer = f.read(bsize)
+            if buffer:
+                pos = buffer.find(s)
+                if pos >= 0:
+                    # return position found
+                    abs_pos = f.tell() - (len(buffer) - pos)
+                    logging.debug("Found string %s at position %d in %s." % (s, abs_pos, fname))
+                    return abs_pos
+            else:
+                logging.debug("Unable to find string %s in %s." % (s, fname))
+                return -1  # string not found
+
+
 def classify_file_kind(filename):
+    """Determine iTunes XML file kind based upon extension and potentially
+    a simple search for a keyword identifier within an ambigious file type
+    such as m4a.
+
+    Please note that certain Swinsian supported file types are not iTunes
+    compatible and therefore will not be properly classified. For example,
+    flac and ogg files have no valid iTunes XML 'kind' representation.
+    Additionally, certain iTunes XML valid 'kind' such as 'Protected AAC
+    audio file' are not playable in DJ software and are therefore not
+    classified.
+
+    When an ambigious file extension is encountered, we perform a very
+    naive string search through the file to determine the codec. If the
+    file is not present on disk, classification is skipped.
+
+    Args:
+        filename: Filenam to classify.
+    Returns:
+        String with one of the following values:
+            - MPEG audio file
+            - AIFF audio file
+            - AIFF audio file
+            - WAV audio file
+            - Apple Lossless audio file
+            - AAC audio file
+    """
     lookup_table = {'mp3': 'MPEG audio file',
                     'aiff': 'AIFF audio file',
                     'aif': 'AIFF audio file',
-                    'wav': 'WAV audio file',
-                    'm4a': 'AAC audio file',
-                    'm4p': 'Protected AAC audio file',
-
-    try:
-        extension = filename.strip().lower().split(".")[-1]
-    except:
-        return None
-    return lookup_table[extension]
+                    'wav': 'WAV audio file'}
+    extension = filename.strip().lower().split(".")[-1]
+    logging.debug("extension = %s" % extension)
+    if extension == 'm4a':
+        if os.path.exists(filename):
+            pos = find_string(filename, 'alac')
+            if pos > 0:
+                kind = 'Apple Lossless audio file'
+            else:
+                # if it's not alac, it's probably aac
+                kind = 'AAC audio file'
+        else:
+            # if file not found, we won't classify
+            kind = None
+    else:
+        if extension in lookup_table:
+            kind = lookup_table[extension]
+        else:
+            kind = None
+    logging.debug("kind = %s" % kind)
+    return kind
 
 
 def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
