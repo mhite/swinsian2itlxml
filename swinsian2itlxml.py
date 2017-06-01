@@ -187,7 +187,7 @@ def classify_file_kind(filename):
     file is not present on disk, classification is skipped.
 
     Args:
-        filename: Filenam to classify.
+        filename: File name (with full path) to classify.
     Returns:
         String with one of the following values:
             - MPEG audio file
@@ -253,7 +253,7 @@ def generate_xml(swinsian_db, itunes_xml, itunes_music_folder):
             album = escape_xml_illegal_chars(row["album"])
             grouping = escape_xml_illegal_chars(row["grouping"])
             genre = escape_xml_illegal_chars(row["genre"])
-            kind = classify_file_kind(row["filename"])
+            kind = classify_file_kind(row["path"])
             size = row["filesize"]
             # total_time = int(round(row["length"] * 1000, 10))
             total_time = int(math.ceil(row["length"] * 1000))
